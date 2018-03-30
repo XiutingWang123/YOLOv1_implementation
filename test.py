@@ -130,12 +130,12 @@ class Evaluater(object):
         for i in range(self.num_class):
             dictPredicted[i] = []
 
-        totalPredicted = np.zero(self.num_class, dtype=int)
+        totalPredicted = np.zeros(self.num_class, dtype=int)
         totalGT = np.zeros(self.num_class, dtype=int)
 
         # process predicted_res
         # each index of values in key (class):value pair would consist of [prob, img_id, [x,y,w,h]]
-        for img_id, values in predicted_res.iteritems():
+        for img_id, values in predicted_res.items():
             for item in values:
                 classId = item[5]
                 dictPredicted[classId].append([item[0], img_id, item[1:5]])
@@ -153,7 +153,7 @@ class Evaluater(object):
             dictGT[i] = {}
             dictMask[i] = {}
 
-        for img_id, values in gt_res.iteritems():
+        for img_id, values in gt_res.items():
             for item in values:
                 classId = item[5]
                 if img_id not in dictGT[classId]:
@@ -177,7 +177,7 @@ class Evaluater(object):
             for i in range(numOfPredictedObjInClass):
                 predicted_item = dictPredicted[classId][i]
                 # if no object in the corresponding image in ground truth
-                if len(dictGT[classId][predicted_item[1]]) == 0:
+                if predicted_item[1] not in dictGT[classId]:
                     falsePos[classId][i] = 1
                     continue
                 # find the ground truth bounding box corresponding with thepredicted bounding box
@@ -187,7 +187,7 @@ class Evaluater(object):
                     if dictMask[classId][predicted_item[1]][j] == 1:
                         continue
 
-                    iou = self.compute_iou(predicted_item[2], dictGT[classId][predicted_item[1][j]])
+                    iou = self.compute_iou(predicted_item[2], dictGT[classId][predicted_item[1]][j])
 
                     if iou > maxIOU:
                         maxIOU = iou
@@ -208,6 +208,7 @@ class Evaluater(object):
             averagePrecision = np.zeros(self.num_class)
             for classId in range(self.num_class):
                 # Cumulative precision : precision with increasing number of detections considered
+                print("length of truePos[{0}]: {1}, length of totalPredicted[{2}]: {3}".format(classId,truePos[classId].shape, classId, totalPredicted[classId].shape)) 
                 cumulativePrecision.append(np.divide(np.cumsum(truePos[classId]), 1 + np.arange(totalPredicted[classId])))
                 # Cumulative Recall : recall with increasing number of detections considered
                 cumulativeRecall.append(np.cumsum(truePos[classId]) / totalGT[classId])
@@ -232,6 +233,7 @@ class Evaluater(object):
                   "{0:10}".format("TotalPred"),
                   "{0:10}".format("TruePositives"),
                   "{0:10}".format("FalsePositives"),
+                  "{0:10}".format("FalseNegatives"),
                   "{0:10}".format("AvgPrecision"))
             for classId in range(self.num_class):
                 print("{0:10}".format(self.classes[classId]),
@@ -239,6 +241,7 @@ class Evaluater(object):
                       "{0:10}".format(len(dictPredicted[classId])),
                       "{0:10}".format(np.sum(truePos[classId])),
                       "{0:10}".format(np.sum(falsePos[classId])),
+                      "{0:10}".format(np.sum(falseNeg[classId])),
                       "{0:8.4f}".format(averagePrecision[classId]))
 
             path_r = os.path.join(self.cache_path, 'cumulativeRecall.csv')

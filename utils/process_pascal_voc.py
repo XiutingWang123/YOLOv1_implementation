@@ -143,7 +143,7 @@ class pascal_voc(object):
             labels[count, :, :, :] = self.gt_labels[self.cursor]['label']
             count += 1
             self.cursor += 1
-            if self.cursor >= len(self.gt_labels) and self.phase == 'train':
+            if self.cursor >= len(self.gt_labels):
                 np.random.shuffle(self.gt_labels)
                 self.cursor = 0
                 self.epoch += 1
