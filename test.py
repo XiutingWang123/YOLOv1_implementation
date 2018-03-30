@@ -1,4 +1,5 @@
 import os
+import csv
 import cv2
 import argparse
 import numpy as np
@@ -18,6 +19,7 @@ class Evaluater(object):
         self.data = data
 
         #config
+        self.cache_path = cfg.CACHE_PATH
         self.batch_size = cfg.BATCH_SIZE
         self.classes = cfg.CLASSES
         self.num_class = len(self.classes)
@@ -239,6 +241,17 @@ class Evaluater(object):
                       "{0:10}".format(np.sum(falsePos[classId])),
                       "{0:8.4f}".format(averagePrecision[classId]))
 
+            path_r = os.path.join(self.cache_path, 'cumulativeRecall.csv')
+            with open(path_r, 'w') as f:
+                wr = csv.writer(f, quoting=csv.QUOTE_ALL)
+                wr.writerow(cumulativeRecall)
+
+            path_p = os.path.join(self.cache_path, 'cumulativePrecision.csv')
+            with open(path_p, 'w') as f:
+                wr = csv.writer(f, quoting=csv.QUOTE_ALL)
+                wr.writerow(cumulativePrecision)
+
+
             """
             if plotPRCurve:
                 for classId, className in enumerate(self.classes):
@@ -262,13 +275,20 @@ class Evaluater(object):
         img_num = 0
         predicted_res = {}
         gt_res = {}
-        load_timer = Timer()
+        batch = 1
+        test_timer = Timer()
 
         while img_num < data_size:
+            print("Load test images batch %d" % batch)
+
             images, labels = self.data.get_data()  #labels shape = (64,7,7,25)
 
+            test_timer.start_timer()
             net_output = self.sess.run(self.network.logits, feed_dict={self.network.images: images})
+            test_timer.end_timer()
+
             #print("shape of net_output: {}".format(net_output.shape))
+            print("Speed: {}".format(test_timer.average_time))
 
             for i in range(net_output.shape[0]):
                 predicted_res[img_num] = self.interpret_output(net_output[i])
@@ -290,6 +310,7 @@ class Evaluater(object):
                 #print("length of gt_res value: {}".format(len(gt_res[img_num][0])))
 
                 img_num += 1
+            batch += 1
 
         meanAveragePrecision, averagePrecision = self.compute_mAP(predicted_res, gt_res)
 
