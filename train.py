@@ -77,7 +77,7 @@ class Solver(object):
 
                 print('Epoch: {}, Iter: {}, Learning rate: {}, Loss: {}, Speed: {}, Remain: {}'.\
                       format(self.data.epoch, iter, round(self.learning_rate.eval(session=self.sess), 6),\
-                             loss, timer.average_time, timer.remain_time))
+                             loss, timer.average_time, timer.remain_time(iter, self.max_iter)))
 
                 self.writer.add_summary(summary, iter)
 
