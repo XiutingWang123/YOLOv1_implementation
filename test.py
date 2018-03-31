@@ -242,7 +242,7 @@ class Evaluater(object):
                     "{0:>13}".format(np.sum(truePos[classId])),
                     "{0:>13}".format(np.sum(falsePos[classId])),
                     "{0:>13}".format(falseNeg[classId]),
-                    "{0:8.4f}".format(averagePrecision[classId]))
+                    "{0:>12.4f}".format(averagePrecision[classId]))
 
 
         path_r = os.path.join(self.cache_path, 'cumulativeRecall.csv')
@@ -320,6 +320,8 @@ class Evaluater(object):
                 #print("length of predicted_res value: {}".format(len(predicted_res[img_num][0])))
                 #print("length of gt_res {0}: {1}".format(img_num, len(gt_res[img_num])))
                 #print("length of gt_res value: {}".format(len(gt_res[img_num][0])))
+                if len(gt_res[img_num]) > 1:
+                    print("gt_res[{0}] has {} objects".format(img_num, len(gt_res[img_num])))
 
                 img_num += 1
             batch += 1

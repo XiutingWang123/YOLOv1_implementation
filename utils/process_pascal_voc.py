@@ -129,7 +129,7 @@ class pascal_voc(object):
             label[y_idx, x_idx, 1:5] = box
             label[y_idx, x_idx, 5+class_idx] = 1
 
-            return label, len(objs)
+        return label, len(objs)
 
 
     def get_data(self):
