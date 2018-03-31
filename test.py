@@ -244,7 +244,7 @@ class Evaluater(object):
                     "{0:10}".format(np.sum(falseNeg[classId])),
                     "{0:8.4f}".format(averagePrecision[classId]))
 
-        """
+        
         path_r = os.path.join(self.cache_path, 'cumulativeRecall.csv')
         with open(path_r, 'w') as f:
             wr = csv.writer(f, quoting=csv.QUOTE_ALL)
@@ -254,7 +254,7 @@ class Evaluater(object):
         with open(path_p, 'w') as f:
             wr = csv.writer(f, quoting=csv.QUOTE_ALL)
             wr.writerow(cumulativePrecision)
-        """
+        
 
 
         """
@@ -321,13 +321,13 @@ class Evaluater(object):
 
                 img_num += 1
             batch += 1
-
+        """    
         path_predicted = os.path.join(self.cache_path, 'predicted_res.csv')
         path_gt = os.path.join(self.cache_path, 'gt_res.csv')
         self.write_dict_to_csv(path_predicted, predicted_res)
         self.write_dict_to_csv(path_gt, gt_res)
-
-        #meanAveragePrecision, averagePrecision = self.compute_mAP(predicted_res, gt_res)
+        """
+        meanAveragePrecision, averagePrecision = self.compute_mAP(predicted_res, gt_res)
 
 
 
