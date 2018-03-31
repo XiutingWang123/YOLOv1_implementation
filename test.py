@@ -203,71 +203,73 @@ class Evaluater(object):
                     falseNeg[classId][i] = 1
 
             # compute average precision for each class
-            cumulativePrecision = []
-            cumulativeRecall = []
-            averagePrecision = np.zeros(self.num_class)
-            for classId in range(self.num_class):
-                # Cumulative precision : precision with increasing number of detections considered
-                print("length of truePos[{0}]: {1}, length of totalPredicted[{2}]: {3}".format(classId,truePos[classId].shape, classId, totalPredicted[classId].shape)) 
-                cumulativePrecision.append(np.divide(np.cumsum(truePos[classId]), 1 + np.arange(totalPredicted[classId])))
-                # Cumulative Recall : recall with increasing number of detections considered
-                cumulativeRecall.append(np.cumsum(truePos[classId]) / totalGT[classId])
+        cumulativePrecision = []
+        cumulativeRecall = []
+        averagePrecision = np.zeros(self.num_class)
+        for classId in range(self.num_class):
+            # Cumulative precision : precision with increasing number of detections considered
+            #print("length of truePos[{0}]: {1}, length of totalPredicted[{2}]: {3}".format(classId,truePos[classId].shape, classId, totalPredicted[classId].shape))
+            cumulativePrecision.append(np.divide(np.cumsum(truePos[classId]), 1 + np.arange(totalPredicted[classId])))
+            # Cumulative Recall : recall with increasing number of detections considered
+            cumulativeRecall.append(np.cumsum(truePos[classId]) / totalGT[classId])
 
-                recallValues = np.unique(cumulativeRecall[-1])
+            recallValues = np.unique(cumulativeRecall[-1])
 
-                if len(recallValues) > 1:
-                    recallStep = recallValues[1] - recallValues[0]
-                else:
-                    recallStep = recallValues[0]
+            if len(recallValues) > 1:
+                recallStep = recallValues[1] - recallValues[0]
+            else:
+                recallStep = recallValues[0]
 
-                for recallThreshold in recallValues:
-                    # Interpolated area under curve for recall value
-                    averagePrecision[classId] \
-                        += np.max(cumulativePrecision[-1][cumulativeRecall[-1] >= recallThreshold]) * recallStep
+            for recallThreshold in recallValues:
+                # Interpolated area under curve for recall value
+                averagePrecision[classId] \
+                    += np.max(cumulativePrecision[-1][cumulativeRecall[-1] >= recallThreshold]) * recallStep
 
-                    meanAveragePrecision = np.mean(averagePrecision)
+        meanAveragePrecision = np.mean(averagePrecision)
 
-            print("Mean Average Precision : %0.4f" % meanAveragePrecision)
-            print("{0:10}".format("Class Name"),
-                  "{0:10}".format("TotalGT"),
-                  "{0:10}".format("TotalPred"),
-                  "{0:10}".format("TruePositives"),
-                  "{0:10}".format("FalsePositives"),
-                  "{0:10}".format("FalseNegatives"),
-                  "{0:10}".format("AvgPrecision"))
-            for classId in range(self.num_class):
-                print("{0:10}".format(self.classes[classId]),
-                      "{0:10}".format(totalGT[classId]),
-                      "{0:10}".format(len(dictPredicted[classId])),
-                      "{0:10}".format(np.sum(truePos[classId])),
-                      "{0:10}".format(np.sum(falsePos[classId])),
-                      "{0:10}".format(np.sum(falseNeg[classId])),
-                      "{0:8.4f}".format(averagePrecision[classId]))
+        print("Mean Average Precision : %0.4f" % meanAveragePrecision)
+        print("{0:10}".format("Class Name"),
+                "{0:10}".format("TotalGT"),
+                "{0:10}".format("TotalPred"),
+                "{0:10}".format("TruePositives"),
+                "{0:10}".format("FalsePositives"),
+                "{0:10}".format("FalseNegatives"),
+                "{0:10}".format("AvgPrecision"))
+        for classId in range(self.num_class):
+            print("{0:10}".format(self.classes[classId]),
+                    "{0:10}".format(totalGT[classId]),
+                    "{0:10}".format(len(dictPredicted[classId])),
+                    "{0:10}".format(np.sum(truePos[classId])),
+                    "{0:10}".format(np.sum(falsePos[classId])),
+                    "{0:10}".format(np.sum(falseNeg[classId])),
+                    "{0:8.4f}".format(averagePrecision[classId]))
 
-            path_r = os.path.join(self.cache_path, 'cumulativeRecall.csv')
-            with open(path_r, 'w') as f:
-                wr = csv.writer(f, quoting=csv.QUOTE_ALL)
-                wr.writerow(cumulativeRecall)
+        """
+        path_r = os.path.join(self.cache_path, 'cumulativeRecall.csv')
+        with open(path_r, 'w') as f:
+            wr = csv.writer(f, quoting=csv.QUOTE_ALL)
+            wr.writerow(cumulativeRecall)
 
-            path_p = os.path.join(self.cache_path, 'cumulativePrecision.csv')
-            with open(path_p, 'w') as f:
-                wr = csv.writer(f, quoting=csv.QUOTE_ALL)
-                wr.writerow(cumulativePrecision)
+        path_p = os.path.join(self.cache_path, 'cumulativePrecision.csv')
+        with open(path_p, 'w') as f:
+            wr = csv.writer(f, quoting=csv.QUOTE_ALL)
+            wr.writerow(cumulativePrecision)
+        """
 
 
-            """
-            if plotPRCurve:
-                for classId, className in enumerate(self.classes):
-                    plt.plot(cumulativeRecall[classId], cumulativePrecision[classId], label=className, c=np.random.rand(3, 1))
-                plt.xlim([0, 1])
-                plt.ylim([0.5, 1])
-                plt.xlabel("Recall")
-                plt.ylabel("Precision")
-                plt.legend(loc='right', fontsize=11)
-                plt.show()
-            """
+        """
+        if plotPRCurve:
+            for classId, className in enumerate(self.classes):
+                plt.plot(cumulativeRecall[classId], cumulativePrecision[classId], label=className, c=np.random.rand(3, 1))
+            plt.xlim([0, 1])
+            plt.ylim([0.5, 1])
+            plt.xlabel("Recall")
+            plt.ylabel("Precision")
+            plt.legend(loc='right', fontsize=11)
+            plt.show()
+        """
 
-            return meanAveragePrecision, averagePrecision
+        return meanAveragePrecision, averagePrecision
 
     def write_dict_to_csv(self, filename, my_dict):
         with open(filename, 'w') as f:
@@ -346,10 +348,16 @@ def main():
     data = pascal_voc('test')
     evaluater = Evaluater(darknet, weight_file, data)
 
+
     print('==== Start evaluation ====')
     evaluater.test()
-    print('==== Finish writing file ====')
+    print('==== Finish evaluation ====')
 
+    """
+    predicted_res = {0:[[0.5276423692703247, 212.23724, 209.12057, 414.2071, 393.7453, 0]], 1:[[0.42673420906066895, 279.03107, 275.76355, 260.0471, 317.2824, 11]]}
+    gt_res = {0:[[1.0, 197.568, 191.14666666666668, 395.136, 358.40000000000003, 0]], 1:[[1.0, 259.84000000000003, 254.46400000000003, 281.344, 367.95733333333334, 11]]}
+    evaluater.compute_mAP(predicted_res, gt_res)
+    """
 
 
 

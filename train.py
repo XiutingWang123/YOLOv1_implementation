@@ -33,7 +33,7 @@ class Solver(object):
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         self.output_cfg()
-        self.ckpt_file = os.path.join(self.output_dir, 'weights')
+        self.ckpt_file = os.path.join(self.output_dir, 'YOLO_train.ckpt')
 
         # set up summary and writer
         self.variable_to_restore = tf.global_variables()
@@ -70,11 +70,11 @@ class Solver(object):
             feed_dict = {self.network.images: images, self.network.labels: labels}
 
             if iter % self.summary_iter == 0:
-                timer().start_timer()
+                timer.start_timer()
                 summary, loss, _ = self.sess.run([self.summary_op, self.networktotal_loss, self.train_op], feed_dict=feed_dict)
-                timer().end_timer()
+                timer.end_timer()
 
-                print('Epoch: {}, Iter: {}, Learning rate: {}, Loss: {}, Duration: {}, Remain: {}'.\
+                print('Epoch: {}, Iter: {}, Learning rate: {}, Loss: {}, Speed: {}, Remain: {}'.\
                       format(self.data.epoch, iter, self.learning_rate, loss, timer.average_time, timer.remain_time))
 
                 self.writer.add_summary(summary, iter)
@@ -85,7 +85,7 @@ class Solver(object):
 
             if iter % self.save_iter == 0:
                 print('iter {}: save checkpoint file to {}'.format(iter))
-                self.saver.save(self.sess, self.ckpy_file, global_step=self.global_step)
+                self.saver.save(self.sess, self.ckpt_file, global_step=self.global_step)
 
 
 
@@ -110,7 +110,7 @@ def update_cfgpath(data_dir, weights_file):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', default='YOLO_small_train.ckpt', type=str)
+    parser.add_argument('--weights', default='YOLO_small.ckpt', type=str)
     parser.add_argument('--data_dir', default='data', type=str)
     parser.add_argument('--gpu', default='', type=str)
     args = parser.parse_args()
@@ -129,7 +129,7 @@ def main():
     print('==== Finish Training ====')
 
 if __name__ == '__main__':
-    # argument: python train.py --weights YOLO_small_train.ckpt --gpu 0
+    # argument: python train.py --weights YOLO_small.ckpt --gpu 0
     main()
 
 
