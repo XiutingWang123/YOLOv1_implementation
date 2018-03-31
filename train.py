@@ -26,7 +26,6 @@ class Solver(object):
         self.decay_steps = cfg.DECAY_STEPS
         self.decay_rate = cfg.DECAY_RATE
         self.staircase = cfg.STAIRCASE
-        self.global_step = tf.train.create_global_step() # number of batches seen by the graph
 
         # initialize saving directory
         self.output_dir = os.path.join(cfg.OUTPUT_DIR, datetime.datetime.now().strftime('%Y:%m:%d:%H:%M'))
@@ -41,8 +40,8 @@ class Solver(object):
         self.summary_op = tf.summary.merge_all()
         self.writer = tf.summary.FileWriter(self.output_dir, flush_secs=60)
 
-
         # set up training parameters
+        self.global_step = tf.train.create_global_step() # number of batches seen by the graph
         self.learning_rate = tf.train.exponential_decay(self.initial_learning_rate,\
                                                         self.global_step,self.decay_steps, self.decay_rate,\
                                                         self.staircase, name='learning_rate')
@@ -71,7 +70,7 @@ class Solver(object):
 
             if iter % self.summary_iter == 0:
                 timer.start_timer()
-                summary, loss, _ = self.sess.run([self.summary_op, self.networktotal_loss, self.train_op], feed_dict=feed_dict)
+                summary, loss, _ = self.sess.run([self.summary_op, self.network.total_loss, self.train_op], feed_dict=feed_dict)
                 timer.end_timer()
 
                 print('Epoch: {}, Iter: {}, Learning rate: {}, Loss: {}, Speed: {}, Remain: {}'.\
@@ -84,7 +83,7 @@ class Solver(object):
 
 
             if iter % self.save_iter == 0:
-                print('iter {}: save checkpoint file to {}'.format(iter))
+                print('iter {}: save checkpoint file to {}'.format(iter, self.ckpt_file))
                 self.saver.save(self.sess, self.ckpt_file, global_step=self.global_step)
 
 
