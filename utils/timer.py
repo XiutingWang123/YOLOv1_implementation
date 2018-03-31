@@ -31,6 +31,9 @@ class Timer(object):
         else:
             return self.diff
 
-    def remain(self, iters, max_iters):
-        self.remain_time = (time.time() - self.init_time) / iters * (max_iters - iters)
+    def remain(self, iter, max_iter):
+        if iter == 0:
+            self.remain_time = 0
+        else:
+            self.remain_time = (time.time() - self.init_time) / iter * (max_iter - iter)
         return str(datetime.timedelta(seconds=int(self.remain_time)))
