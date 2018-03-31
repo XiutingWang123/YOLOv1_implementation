@@ -146,8 +146,8 @@ class Detector(object):
         :param box2: [x,y,w,h]
         :return: float, IOU
         """
-        inter_w = min(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2]) - max(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2])
-        inter_h = min(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3]) - max(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3])
+        inter_w = min(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2]) - max(box1[0] - 0.5 * box1[2], box2[0] - 0.5 * box2[2])
+        inter_h = min(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3]) - max(box1[1] - 0.5 * box1[3], box2[1] - 0.5 * box2[3])
         inter = 0 if inter_w <= 0 or inter_h <= 0 else inter_w * inter_h
 
         return inter / (box1[2] * box1[3] + box2[2] * box2[3] - inter)

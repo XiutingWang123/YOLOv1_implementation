@@ -111,8 +111,8 @@ class Evaluater(object):
         :param box2: [x,y,w,h]
         :return: float, IOU
         """
-        inter_w = min(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2]) - max(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2])
-        inter_h = min(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3]) - max(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3])
+        inter_w = min(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2]) - max(box1[0] - 0.5 * box1[2], box2[0] - 0.5 * box2[2])
+        inter_h = min(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3]) - max(box1[1] - 0.5 * box1[3], box2[1] - 0.5 * box2[3])
         inter = 0 if inter_w <= 0 or inter_h <= 0 else inter_w * inter_h
 
         return inter / (box1[2] * box1[3] + box2[2] * box2[3] - inter)
@@ -166,13 +166,12 @@ class Evaluater(object):
 
         truePos = []
         falsePos = []
-        falseNeg = []
+        falseNeg = np.zeros(self.num_class, dtype=int)
 
         for classId in range(self.num_class):
             numOfPredictedObjInClass = totalPredicted[classId]
             truePos.append(np.zeros(numOfPredictedObjInClass, dtype=int))
             falsePos.append(np.zeros(numOfPredictedObjInClass, dtype=int))
-            falseNeg.append(np.zeros(numOfPredictedObjInClass, dtype=int))
 
             for i in range(numOfPredictedObjInClass):
                 predicted_item = dictPredicted[classId][i]
@@ -200,9 +199,10 @@ class Evaluater(object):
                     dictMask[classId][predicted_item[1]][maxIndex] = 1
                     truePos[classId][i] = 1
                 else:
-                    falseNeg[classId][i] = 1
+                    falseNeg[classId] += 1
 
-            # compute average precision for each class
+
+        # compute average precision for each class
         cumulativePrecision = []
         cumulativeRecall = []
         averagePrecision = np.zeros(self.num_class)
@@ -228,33 +228,27 @@ class Evaluater(object):
         meanAveragePrecision = np.mean(averagePrecision)
 
         print("Mean Average Precision : %0.4f" % meanAveragePrecision)
-        print("{0:10}".format("Class Name"),
-                "{0:10}".format("TotalGT"),
-                "{0:10}".format("TotalPred"),
-                "{0:10}".format("TruePositives"),
-                "{0:10}".format("FalsePositives"),
-                "{0:10}".format("FalseNegatives"),
-                "{0:10}".format("AvgPrecision"))
+        print("{0:>12}".format("ClassName"),
+                "{0:7}".format("Ground Truth"),
+                "{0:9}".format("Predicted"),
+                "{0:13}".format("TruePositives"),
+                "{0:13}".format("FalsePositives"),
+                "{0:13}".format("FalseNegatives"),
+                "{0:12}".format("AvgPrecision"))
         for classId in range(self.num_class):
-            print("{0:10}".format(self.classes[classId]),
-                    "{0:10}".format(totalGT[classId]),
-                    "{0:10}".format(len(dictPredicted[classId])),
-                    "{0:10}".format(np.sum(truePos[classId])),
-                    "{0:10}".format(np.sum(falsePos[classId])),
-                    "{0:10}".format(np.sum(falseNeg[classId])),
+            print("{0:>12}".format(self.classes[classId]),
+                    "{0:>7}".format(totalGT[classId]),
+                    "{0:>9}".format(len(dictPredicted[classId])),
+                    "{0:>13}".format(np.sum(truePos[classId])),
+                    "{0:>13}".format(np.sum(falsePos[classId])),
+                    "{0:>13}".format(falseNeg[classId]),
                     "{0:8.4f}".format(averagePrecision[classId]))
 
-        
-        path_r = os.path.join(self.cache_path, 'cumulativeRecall.csv')
-        with open(path_r, 'w') as f:
-            wr = csv.writer(f, quoting=csv.QUOTE_ALL)
-            wr.writerow(cumulativeRecall)
 
+        path_r = os.path.join(self.cache_path, 'cumulativeRecall.csv')
         path_p = os.path.join(self.cache_path, 'cumulativePrecision.csv')
-        with open(path_p, 'w') as f:
-            wr = csv.writer(f, quoting=csv.QUOTE_ALL)
-            wr.writerow(cumulativePrecision)
-        
+        self.write_list_to_csv(path_r, cumulativeRecall)
+        self.write_list_to_csv(path_p, cumulativePrecision)
 
 
         """
@@ -270,6 +264,14 @@ class Evaluater(object):
         """
 
         return meanAveragePrecision, averagePrecision
+
+
+    def write_list_to_csv(self,filename, my_list):
+        with open(filename, 'w') as f:
+            wr = csv.writer(f)
+            wr.writerow(my_list)
+
+
 
     def write_dict_to_csv(self, filename, my_dict):
         with open(filename, 'w') as f:
@@ -305,7 +307,7 @@ class Evaluater(object):
                 #gt_res[img_num] = [labels[i, x, y, :] for x in range(self.grid_size) for y in range(self.grid_size) if labels[i, x, y, 0] == 1]
 
                 gt_res[img_num] = []
-                # process gt_labels, label = [prob, x, y, w, h, class(20)]] to []prob, x, y, w, h, class(int)]
+                # process gt_labels, label = [prob, x, y, w, h, class(20)] to [prob, x, y, w, h, class(int)]
                 for x in range(self.grid_size):
                     for y in range(self.grid_size):
                         if labels[i, x, y, 0] == 1:
@@ -327,7 +329,7 @@ class Evaluater(object):
         self.write_dict_to_csv(path_predicted, predicted_res)
         self.write_dict_to_csv(path_gt, gt_res)
         """
-        meanAveragePrecision, averagePrecision = self.compute_mAP(predicted_res, gt_res)
+        self.compute_mAP(predicted_res, gt_res)
 
 
 
@@ -354,10 +356,11 @@ def main():
     print('==== Finish evaluation ====')
 
     """
-    predicted_res = {0:[[0.5276423692703247, 212.23724, 209.12057, 414.2071, 393.7453, 0]], 1:[[0.42673420906066895, 279.03107, 275.76355, 260.0471, 317.2824, 11]]}
-    gt_res = {0:[[1.0, 197.568, 191.14666666666668, 395.136, 358.40000000000003, 0]], 1:[[1.0, 259.84000000000003, 254.46400000000003, 281.344, 367.95733333333334, 11]]}
+    predicted_res = {0:[[0.5276423692703247, 212.23724, 209.12057, 414.2071, 393.7453, 0]], 1:[[0.42673420906066895, 279.03107, 275.76355, 260.0471, 317.2824, 1]]}
+    gt_res = {0:[[1.0, 197.568, 191.14666666666668, 395.136, 358.40000000000003, 0]], 1:[[1.0, 259.84000000000003, 254.46400000000003, 281.344, 367.95733333333334, 1]]}
     evaluater.compute_mAP(predicted_res, gt_res)
     """
+
 
 
 
