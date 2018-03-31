@@ -269,6 +269,11 @@ class Evaluater(object):
 
             return meanAveragePrecision, averagePrecision
 
+    def write_dict_to_csv(self, filename, my_dict):
+        with open(filename, 'w') as f:
+            wr = csv.DictWriter(f, my_dict.keys())
+            wr.writeheader()
+            wr.writerow(my_dict)
 
 
     def test(self):
@@ -315,7 +320,12 @@ class Evaluater(object):
                 img_num += 1
             batch += 1
 
-        meanAveragePrecision, averagePrecision = self.compute_mAP(predicted_res, gt_res)
+        path_predicted = os.path.join(self.cache_path, 'predicted_res.csv')
+        path_gt = os.path.join(self.cache_path, 'gt_res.csv')
+        self.write_dict_to_csv(path_predicted, predicted_res)
+        self.write_dict_to_csv(path_gt, gt_res)
+
+        #meanAveragePrecision, averagePrecision = self.compute_mAP(predicted_res, gt_res)
 
 
 
@@ -338,7 +348,7 @@ def main():
 
     print('==== Start evaluation ====')
     evaluater.test()
-    print('==== Finish evaluation ====')
+    print('==== Finish writing file ====')
 
 
 
