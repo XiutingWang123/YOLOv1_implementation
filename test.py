@@ -320,7 +320,11 @@ class Evaluater(object):
                 img_num += 1
             batch += 1
 
+<<<<<<< HEAD
         path_predicted = os.path.join(self.cache_path, 'predicted_res.csv')
+=======
+        path_predicted = os.path.join(self.cache_path, 'predicted_res')
+>>>>>>> bce998d2823f34bf7a1347973b285f55af5997c2
         path_gt = os.path.join(self.cache_path, 'gt_res.csv')
         self.write_dict_to_csv(path_predicted, predicted_res)
         self.write_dict_to_csv(path_gt, gt_res)
