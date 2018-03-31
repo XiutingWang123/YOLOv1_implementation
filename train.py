@@ -55,7 +55,9 @@ class Solver(object):
 
         if self.weights_file is not None:
             print('Restoring weights from {}'.format(self.weights_file))
-            self.saver.restore(self.sess, self.weights_file)
+            #self.saver.restore(self.sess, self.weights_file)
+            self.saver = tf.train.import_meta_graph(self.weights_file + '/YOLO_train.ckpt-1000.meta')
+            self.saver.restore(self.sess, tf.train.latest_checkpoint(self.weights_file))
 
         self.writer.add_graph(self.sess.graph)
 
@@ -74,7 +76,8 @@ class Solver(object):
                 timer.end_timer()
 
                 print('Epoch: {}, Iter: {}, Learning rate: {}, Loss: {}, Speed: {}, Remain: {}'.\
-                      format(self.data.epoch, iter, self.learning_rate, loss, timer.average_time, timer.remain_time))
+                      format(self.data.epoch, iter, round(self.learning_rate.eval(session=self.sess), 6),\
+                             loss, timer.average_time, timer.remain_time))
 
                 self.writer.add_summary(summary, iter)
 
@@ -109,7 +112,7 @@ def update_cfgpath(data_dir, weights_file):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', default='YOLO_small.ckpt', type=str)
+    parser.add_argument('--weights', default='', type=str)
     parser.add_argument('--data_dir', default='data', type=str)
     parser.add_argument('--gpu', default='', type=str)
     args = parser.parse_args()
@@ -129,6 +132,7 @@ def main():
 
 if __name__ == '__main__':
     # argument: python train.py --weights YOLO_small.ckpt --gpu 0
+    # argument: python train.py --gpu 0
     main()
 
 

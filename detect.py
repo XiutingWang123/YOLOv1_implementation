@@ -187,7 +187,7 @@ class Detector(object):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', default='YOLO_small.ckpt', type=str)
+    parser.add_argument('--weights', default='', type=str)
     parser.add_argument('--weight_dir', default='weights', type=str)
     parser.add_argument('--data_dir', default='data', type=str)
     parser.add_argument('--gpu', default='', type=str)

@@ -38,8 +38,10 @@ class Evaluater(object):
         self.sess.run(tf.global_variables_initializer())
 
         print('Restoring weights from: {}'.format(self.weight_file))
-        self.saver = tf.train.Saver()
-        self.saver.restore(self.sess, self.weight_file)
+        #self.saver = tf.train.Saver()
+        #self.saver.restore(self.sess, self.weight_file)
+        self.saver = tf.train.import_meta_graph(self.weight_file + '/YOLO_train.ckpt-1000.meta')
+        self.saver.restore(self.sess, tf.train.latest_checkpoint(self.weight_file))
 
 
 
@@ -335,7 +337,7 @@ class Evaluater(object):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', default='YOLO_small.ckpt', type=str)
+    parser.add_argument('--weights', default='', type=str)
     parser.add_argument('--weight_dir', default='weights', type=str)
     parser.add_argument('--data_dir', default='data', type=str)
     parser.add_argument('--gpu', default='', type=str)
@@ -367,4 +369,5 @@ def main():
 
 if __name__ == '__main__':
     # argument: python test.py --weights YOLO_small.ckpt --gpu 0
+    # argument: python test.py
     main()
