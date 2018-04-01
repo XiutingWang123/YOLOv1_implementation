@@ -56,7 +56,7 @@ class Solver(object):
         if self.weights_file is not None:
             print('Restoring weights from {}'.format(self.weights_file))
             #self.saver.restore(self.sess, self.weights_file)
-            self.saver = tf.train.import_meta_graph(self.weights_file + '/YOLO_train.ckpt-1000.meta')
+            self.saver = tf.train.import_meta_graph(self.weights_file + '/YOLO_train.ckpt-8000.meta')
             self.saver.restore(self.sess, tf.train.latest_checkpoint(self.weights_file))
 
         self.writer.add_graph(self.sess.graph)
