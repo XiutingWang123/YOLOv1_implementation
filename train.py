@@ -77,7 +77,7 @@ class Solver(object):
 
                 print('Epoch: {}, Iter: {}, Learning rate: {}, Loss: {}, Speed: {}, Remain: {}'.\
                       format(self.data.epoch, iter, round(self.learning_rate.eval(session=self.sess), 6),\
-                             loss, timer.average_time, timer.remain_time(iter, self.max_iter)))
+                             loss, timer.average_time, timer.remain(iter, self.max_iter)))
 
                 self.writer.add_summary(summary, iter)
 
@@ -120,7 +120,7 @@ def main():
     if args.data_dir != cfg.DATA_PATH:
         update_cfgpath(args.data_dir, args.weights)
 
-    if args.gpu is not None:
+    if args.gpu is not '':
         cfg.GPU = args.gpu
 
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.GPU

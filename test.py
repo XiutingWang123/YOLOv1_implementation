@@ -343,7 +343,7 @@ def main():
     parser.add_argument('--gpu', default='', type=str)
     args = parser.parse_args()
 
-    if args.gpu is not None:
+    if args.gpu is not '':
         cfg.GPU = args.gpu
 
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.GPU

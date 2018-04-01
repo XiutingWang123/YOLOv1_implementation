@@ -162,11 +162,14 @@ class Detector(object):
             y = int(res[i][2])
             w = int(res[i][3] * 0.5)
             h = int(res[i][4] * 0.5)
-            cv2.rectangle(image, (x - w, y - h), (x + w, y + h), (255, 255, 0), 2)
-            cv2.rectangle(image, (x - w, y - h - 20), (x + w, y - h), (125, 125, 125), -1)
+            # unique color for each class
+            seed = [350, 750, 180]
+            color = tuple([(j * (1 + self.classes.index(res[i][0])) % 255) for j in seed])
+            cv2.rectangle(image, (x - w, y - h), (x + w, y + h), color, 2)
+            cv2.rectangle(image, (x - w, y - h), (x + w, y - h + 20), color, -1)
             lineType = cv2.LINE_AA
-            cv2.putText(image, res[i][0] + ' : %.2f' % res[i][5],(x - w + 5, y - h - 7), \
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0, 0, 0), 1, lineType)
+            cv2.putText(image, res[i][0] + ' : %.2f' % res[i][5],(x - w + 5, y - h + 15), \
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, lineType)
 
 
     def video_detector(self, cap):
@@ -197,7 +200,7 @@ def main():
     parser.add_argument('--video',  default='', type=str, help='path to test video')
     args = parser.parse_args()
 
-    if args.gpu is not None:
+    if args.gpu is not '':
         cfg.GPU = args.gpu
 
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.GPU
@@ -205,16 +208,17 @@ def main():
     weight_file = os.path.join(args.data_dir, args.weight_dir, args.weights)
     detector = Detector(net, weight_file)
 
-    if args.image is not None:
+    if args.image is not '':
         imname = os.path.join(args.data_dir, args.image)
         detector.image_detector(imname)
 
-    if args.video is not None:
+    if args.video is not '':
         cap = cv2.VideoCapture(0)
-        detector.vidoe_detector(cap)
+        detector.video_detector(cap)
 
 
 
 if __name__ == '__main__':
     # argument: python detect.py --weights YOLO_small.ckpt --image test/dog.jpg
+    # argument: python detect.py  --image test/dog.jpg
     main()
