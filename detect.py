@@ -13,6 +13,7 @@ class Detector(object):
     def __init__(self, network, weight_file):
         self.network = network
         self.weight_file = weight_file
+        self.outputFile = cfg.PASCAL_PATH_TEST
 
         #config
         self.classes = cfg.CLASSES
@@ -171,22 +172,59 @@ class Detector(object):
             cv2.putText(image, res[i][0] + ' : %.2f' % res[i][5],(x - w + 5, y - h + 15), \
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, lineType)
 
-
+    """
     def video_detector(self, cap):
 
-        while True:
-            ret, frame = cap.read()
-            if ret is False:
-                break
+        ret, _ = cap.read()
 
-            res = self.detect(frame)
-            self.draw_boxes(frame, res)
+        while ret:
+            ret, frame = cap.read()
+            result = self.detect(frame)
+            self.draw_boxes(frame, result)
             # Display the resulting frame
             cv2.imshow('Video', frame)
             cv2.waitKey(10)
+            ret, frame = cap.read()
 
         cap.release()
         cv2.destroyAllWindows()
+    """
+
+    def video_detector(self, cap):
+
+        # get the information of cap
+        codec = cv2.VideoWriter_fourcc(*'MJPG') #int(cap.get(cv2.CAP_PROP_FOURCC))
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+        frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        # output stream
+        output = cv2.VideoWriter(self.outputFile + '/video_output.avi', codec, fps, (frameWidth,frameHeight))
+        frameIndex = cap.get(cv2.CAP_PROP_POS_FRAMES)
+        totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+        timer = Timer()
+
+        while True:
+            ret, frame = cap.read()
+            if ret:
+                timer.start_timer()
+                result = self.detect(frame)
+                timer.end_timer()
+                frameIndex = cap.get(cv2.CAP_PROP_POS_FRAMES)
+                self.draw_boxes(frame, result)
+                output.write(frame)
+            else:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frameIndex-1)
+                cv2.waitKey(100)
+
+            if frameIndex == totalFrames:
+                break
+
+        cap.release()
+        output.release()
+        cv2.destroyAllWindows()
+        print("Average time for object detection per frame: {:.3f} fps".format(timer.average_time))
 
 
 
@@ -194,6 +232,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', default='', type=str)
     parser.add_argument('--weight_dir', default='weights', type=str)
+    parser.add_argument('--test_dir', default='test', type=str)
     parser.add_argument('--data_dir', default='data', type=str)
     parser.add_argument('--gpu', default='', type=str)
     parser.add_argument('--image', default='', type=str, help='path to test image')
@@ -206,19 +245,22 @@ def main():
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.GPU
     net = DarkNet(False)
     weight_file = os.path.join(args.data_dir, args.weight_dir, args.weights)
+    test_path = os.path.join(args.data_dir, args.test_dir)
     detector = Detector(net, weight_file)
 
     if args.image is not '':
-        imname = os.path.join(args.data_dir, args.image)
+        imname = os.path.join(test_path, args.image)
         detector.image_detector(imname)
 
     if args.video is not '':
-        cap = cv2.VideoCapture(0)
+        video = os.path.join(test_path, args.video)
+        cap = cv2.VideoCapture(video)
         detector.video_detector(cap)
 
 
 
 if __name__ == '__main__':
-    # argument: python detect.py --weights YOLO_small.ckpt --image test/dog.jpg
-    # argument: python detect.py  --image test/dog.jpg
+    # argument: python detect.py --weights YOLO_small.ckpt --image dog.jpg
+    # argument: python detect.py  --image dog.jpg
+    # argument: python detect.py  --video traffic.avi
     main()
