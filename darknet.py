@@ -152,7 +152,7 @@ class DarkNet(object):
             iou_predict_truth = self.calculate_iou(predict_boxes_train, boxes)
 
             # calculate I tensor [BATCH_SIZE, GRID_SIZE, GRID_SIZE, BOXES_PER_GRID]
-            object_mask = tf.reduce_max(iou_predict_truth, 3, keep_dims=True)
+            object_mask = tf.reduce_max(iou_predict_truth, 3, keepdims=True)
             object_mask = tf.cast((iou_predict_truth >= object_mask), tf.float32) * response
 
             # calculate no_I tensor [GRID_SIZE, GRID_SIZE, BOXES_PER_GRID]

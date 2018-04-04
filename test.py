@@ -40,7 +40,7 @@ class Evaluater(object):
         print('Restoring weights from: {}'.format(self.weight_file))
         self.saver = tf.train.Saver()
         #self.saver.restore(self.sess, self.weight_file)
-        self.saver = tf.train.import_meta_graph(self.weight_file + '/YOLO_train.ckpt-8000.meta')
+        self.saver = tf.train.import_meta_graph(self.weight_file + '/YOLO_train.ckpt-15000.meta')
         self.saver.restore(self.sess, tf.train.latest_checkpoint(self.weight_file))
 
 
