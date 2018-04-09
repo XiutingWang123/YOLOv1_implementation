@@ -28,6 +28,7 @@ class Evaluater(object):
         self.boxes_per_grid = cfg.BOXES_PER_GRID
         self.threshold = cfg.THRESHOLD
         self.iou_threshold = cfg.IOU_THRESHOLD
+        self.iou_overlap_threshold = cfg.IOU_OVERLAP_THRESHOLD
 
         # boundaries for separating logits
         self.boundary1 = self.grid_size * self.grid_size * self.num_class
@@ -90,7 +91,7 @@ class Evaluater(object):
                 continue
             for j in range(i + 1, len(boxes_filtered)):
                 # delete overlap bounding boxes
-                if self.compute_iou(boxes_filtered[i], boxes_filtered[j]) > self.iou_threshold:
+                if self.compute_iou(boxes_filtered[i], boxes_filtered[j]) > self.iou_overlap_threshold:
                     probs_filtered[j] = 0.0
 
         iou_isGreater = np.array(probs_filtered > 0.0, dtype='bool')
@@ -217,13 +218,12 @@ class Evaluater(object):
 
             recallValues = np.unique(cumulativeRecall[-1])
 
-            if len(recallValues) > 1:
-                recallStep = recallValues[1] - recallValues[0]
-            else:
-                recallStep = recallValues[0]
-
-            for recallThreshold in recallValues:
+            for idx, recallThreshold in enumerate(recallValues):
                 # Interpolated area under curve for recall value
+                if idx == 0:
+                    recallStep = recallValues[0]
+                else:
+                    recallStep = recallValues[idx] - recallValues[idx-1]
                 averagePrecision[classId] \
                     += np.max(cumulativePrecision[-1][cumulativeRecall[-1] >= recallThreshold]) * recallStep
 
