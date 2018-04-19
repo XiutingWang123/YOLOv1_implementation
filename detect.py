@@ -225,7 +225,7 @@ class Detector(object):
         cap.release()
         output.release()
         cv2.destroyAllWindows()
-        print("Average time for object detection per frame: {:.3f} fps".format(timer.average_time))
+        print("Average time for object detection per frame: {:.3f} fps".format(1/timer.average_time))
 
 
 
