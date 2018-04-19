@@ -8,7 +8,7 @@ YOLO v1, small
 mAP: 52%
 
 Class Name | Ground Truth | Predicted | True Positives | False Positives | False Negatives | Avg. Precision
-— | — | —
+———— | ———— | ————
 aeroplane | 286 | 214 | 199 | 10 | 5 | 0.6908
      bicycle | 357 | 238 | 215 | 20 | 3 | 0.5873
         bird | 534 | 362 | 310 | 49 | 3 | 0.5514
