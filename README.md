@@ -3,7 +3,11 @@
 ### Model:
 YOLO v1, small
 
-### Performance on VOC 2007 test set
+### Training
+
+VOC2007 train/val + VOC2012 train/val
+
+### Performance on VOC2007 test set
 
 mAP: 52%
 
